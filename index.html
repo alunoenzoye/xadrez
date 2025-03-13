@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Xadrez</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <script type="module" src="script/modules/board.js"></script>
+    <script type="module" src="script/modules/boardsquare.js"></script>
+    <script type="module" src="script/modules/position2d.js"></script>
+    <script type="module" src="script/modules/basepiece.js"></script>
+    <script type="module" src="script/pieces/pawn.js"></script>
+    <script type="module" src="script/script.js" defer></script>
+</head>
+<body>
+<main>
+    <div class="game-container">
+        <div class="board-container">
+            <div class="board-vertical-position-display">
+                <div><span>8</span></div>
+                <div><span>7</span></div>
+                <div><span>6</span></div>
+                <div><span>5</span></div>
+                <div><span>4</span></div>
+                <div><span>3</span></div>
+                <div><span>2</span></div>
+                <div><span>1</span></div>
+            </div>
+            <div id="board">
+                <template id="board-square-template">
+                    <div class="board-square">
+                    </div>
+                </template>
+            </div>
+            <div style="grid-row-start: 10" class="board-horizontal-position-display">
+                <div><span>a</span></div>
+                <div><span>b</span></div>
+                <div><span>c</span></div>
+                <div><span>d</span></div>
+                <div><span>e</span></div>
+                <div><span>f</span></div>
+                <div><span>g</span></div>
+                <div><span>h</span></div>
+            </div>
+        </div>
+        <div class="game-info-container">
+
+        </div>
+    </div>
+</main>
+</body>
+</html>
