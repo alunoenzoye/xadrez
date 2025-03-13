@@ -1,7 +1,6 @@
 import BasePiece from "../modules/basepiece.js";
 
 function onSelect() {
-    console.log("I got selected!");
     this.followCursor();
 }
 

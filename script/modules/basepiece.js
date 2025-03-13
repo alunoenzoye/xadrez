@@ -31,8 +31,6 @@ function move(e) {
 function followCursor() {
     const element = this.element;
     element.style.position = "absolute";
-    element.style.left = `50%`;
-    element.style.top = `50%`;
     element.style.transform = "translate(-50%, -50%)";
 
     document.addEventListener("mousemove", (e) => {
