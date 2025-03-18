@@ -1,5 +1,5 @@
 import {BoardSquare, highlightEnum} from "./boardsquare.js";
-import Position2D from "./position2D.js";
+import Position2D from "./position2d.js";
 
 function getSquare(position2d) {
     const x = position2d.x;
@@ -46,14 +46,14 @@ function onSquareSelected(square) {
     if (selectedPiece !== null) {
         // Avoid firing any logic if we just select the currently selected piece
         if (selectedPiece === piece) {
+            this._removeSelection();
+
             return;
         }
 
-        const loseSelection = selectedPiece.onSquareSelected(square);
+        selectedPiece.onSquareSelected(square);
 
-        if (loseSelection) {
-            this._removeSelection()
-        }
+        this._removeSelection()
 
         return;
     }
@@ -104,7 +104,7 @@ for (let x = 0; x < 8; x++) {
     const column = []
 
     for (let y = 0; y < 8; y++) {
-        const square = new BoardSquare(x, y);
+        const square = new BoardSquare(y, x);
 
         column[y] = square;
         board.element.appendChild(square.element);

@@ -3,6 +3,17 @@ import Position2D from "../modules/position2d.js";
 import Move from "../modules/move.js";
 import {highlightEnum} from "../modules/boardsquare.js";
 
+const MOVE_OFFSETS = [
+    new Position2D(1, -2),
+    new Position2D(-1, -2),
+    new Position2D(1, 2),
+    new Position2D(-1, 2),
+    new Position2D(2, 1),
+    new Position2D(2, -1),
+    new Position2D(-2, 1),
+    new Position2D(-2, -1),
+]
+
 function onSelect() {
     this.followCursor();
 
@@ -44,7 +55,7 @@ function createImageFromTeam(team) {
     img.classList.add("piece");
 
     const prefix = (team === "white") ? "w" : "b";
-    img.src = `/assets/pieces/01_classic/${prefix}-pawn.png`;
+    img.src = `/assets/pieces/01_classic/${prefix}-knight.png`;
 
     return img;
 }
@@ -59,45 +70,20 @@ function getPossibleMoves() {
     }
 
     let moves = [];
-    let forwardLength = (this._firstMove) ? 2 : 1;
 
-    for (let i = 1; i <= forwardLength; i++) {
-        const position2d = currentPosition2D.add(direction.mult(new Position2D(0, i)));
-        const square = board.getSquare(position2d);
+    for (let i = 0; i < MOVE_OFFSETS.length; i++) {
+        const moveOffset = MOVE_OFFSETS[i];
+        const movePosition = currentPosition2D.add(moveOffset);
+        const currentSquare = board.getSquare(movePosition);
 
-        if (square === null) {
+        if (currentSquare === null) {
             continue;
         }
 
-        if (square.piece !== null) {
-            break
-        }
-
         moves.push(new Move(
-            currentPosition2D.add(direction.mult(new Position2D(0, i))),
-            false
-        ))
-    }
-
-    const leftSquare = board.getSquare(currentPosition2D.add(direction.add(new Position2D(1, 0))));
-    const rightSquare = board.getSquare(currentPosition2D.add(direction.add(new Position2D(-1, 0))));
-
-    if (leftSquare !== null) {
-        if (leftSquare.piece !== null) {
-            moves.push(new Move(
-                leftSquare.position2d,
-                true
-            ))
-        }
-    }
-
-    if (rightSquare !== null) {
-        if (rightSquare.piece !== null) {
-            moves.push(new Move(
-                rightSquare.position2d,
-                true
-            ))
-        }
+            movePosition,
+            true
+        ));
     }
 
     return moves;
@@ -107,14 +93,11 @@ function onGameUpdate() {
 
 }
 
-function Pawn(board, team) {
+function Knight(board, team) {
     const teamName = team.name;
-    const direction = teamName === "white" ? new Position2D(0, 1) : new Position2D(0, -1);
 
     BasePiece.call(this, board, team);
 
-    this._firstMove = true;
-    this._direction = direction;
     this.onSelect = onSelect;
     this.onUnselect = onUnselect;
     this.onSquareSelected = onSquareSelected;
@@ -122,4 +105,4 @@ function Pawn(board, team) {
     this._getPossibleMoves = getPossibleMoves;
 }
 
-export default Pawn;
+export default Knight;

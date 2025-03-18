@@ -29,13 +29,14 @@ function highlightSquare(highlightType) {
     }
 
     this.clearSquareHighlight();
-    element.classList.add(SELECTED_HIGHLIGHT_CLASS_NAME);
+
+    element.classList.add(highlightType);
 }
 
 const getSquareColor = (x, y) => {
-    const isWhite = (x % 2 === 0);
+    const isBlack = (x % 2 === 0);
 
-    return ((y % 2 === 0) === isWhite) ? "white" : "black";
+    return ((y % 2 === 0) === isBlack) ? "black" : "white";
 }
 
 const createSquareElement = () => {
@@ -47,10 +48,11 @@ function BoardSquare(x, y) {
     const squareElement = createSquareElement();
 
     squareElement.dataset.squareColor = getSquareColor(x, y);
-    squareElement.dataset.x = y;
-    squareElement.dataset.y = x;
+    squareElement.dataset.x = x;
+    squareElement.dataset.y = y;
 
     this.element = squareElement;
+    this.position2d = new Position2D(x, y);
     this.piece =  null;
     this.clearSquareHighlight = clearSquareHighlight;
     this.highlightSquare = highlightSquare;
