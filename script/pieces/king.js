@@ -8,6 +8,10 @@ const SEARCH_DIRECTIONS = [
     new Position2D(-1, 1),
     new Position2D(1, -1),
     new Position2D(-1, -1),
+    new Position2D(0, -1),
+    new Position2D(0, 1),
+    new Position2D(1, 0),
+    new Position2D(-1, 0),
 ]
 
 function onSelect() {
@@ -42,9 +46,7 @@ function onSquareSelected(square) {
         piece.take();
     }
 
-    this.removeAbsolutePin();
     this.moveToPosition(squarePosition2D);
-
     this._firstMove = false;
 
     return true;
@@ -55,7 +57,7 @@ function createImageFromTeam(team) {
     img.classList.add("piece");
 
     const prefix = (team === "white") ? "w" : "b";
-    img.src = `/assets/pieces/01_classic/${prefix}-bishop.png`;
+    img.src = `/assets/pieces/01_classic/${prefix}-king.png`;
 
     return img;
 }
@@ -73,35 +75,98 @@ function getPossibleMoves() {
 
     for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
         const searchDirection = SEARCH_DIRECTIONS[i];
-        let blockingPiece = null;
+        const opponentAttackingMoves = this.team.opponent.getAttackingMoves();
+
         let currentSquare = board.getSquare(currentPosition2D.add(searchDirection));
-        while (currentSquare !== null) {
-            moves.push(new Move(
-                currentSquare.position2d,
-                true
-            ));
+        let isMoveValid = true
 
-            if (currentSquare.piece !== null) {
-                break;
-            }
-
-            currentSquare = board.getSquare(currentSquare.position2d.add(searchDirection));
+        if (currentSquare === null) {
+            continue;
         }
+
+        const squarePiece = currentSquare.piece;
+
+        if (squarePiece !== null) {
+            if (squarePiece.team === this.team) {
+                continue;
+            }
+        }
+
+        if (!this.isPositionSafe(currentSquare.position2d)) {
+            continue;
+        }
+
+        if (!isMoveValid) {
+            continue;
+        }
+
+        moves.push(new Move(
+            currentSquare.position2d,
+            true
+        ));
     }
 
     return moves;
 }
 
-function Bishop(board, team) {
+function isPositionSafe(position2d) {
+    const opponentAttackingMoves = this.team.opponent.getAttackingMoves();
+
+    let safe = true;
+    for (const move of opponentAttackingMoves) {
+        if (move.position2d.equal(position2d)) {
+            safe = false;
+            break
+        }
+    }
+
+    return safe;
+}
+
+function onGameUpdate() {
+    const team = this.team;
+
+    this.check = !this.isPositionSafe(this.position2d);
+
+    console.log(this.getPossibleMoves().length);
+    if (this.getPossibleMoves().length === 0) {
+        if (this.check) {
+            console.log("checkmate")
+        } else {
+            let totalMoves = 0;
+            for (const piece of team.alivePieces) {
+                if (piece === this) {
+                    continue;
+                }
+                totalMoves += piece.getPossibleMoves().length;
+            }
+            if (totalMoves === 0) {
+                console.log("stalemate")
+            }
+        }
+    }
+}
+
+function take() {
+    console.error("You can't take the king!");
+}
+
+function King(board, team) {
     const teamName = team.name;
+    team.king = this;
 
     BasePiece.call(this, board, team);
 
+    this.check = false;
+    this.firstMove = true;
+    this.take = take;
     this.onSelect = onSelect;
     this.onUnselect = onUnselect;
+    this.onGameUpdate = onGameUpdate;
     this.onSquareSelected = onSquareSelected;
     this.element = createImageFromTeam(teamName);
     this.getPossibleMoves = getPossibleMoves;
+    this.isPositionSafe = isPositionSafe;
 }
 
-export default Bishop;
+export default King;

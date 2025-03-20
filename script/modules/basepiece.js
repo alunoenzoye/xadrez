@@ -102,8 +102,22 @@ function removeFromCurrentSquare() {
     this.currentSquare = null;
 }
 
+function absolutePinPiece(piece) {
+    this.absolutePinnedPiece = piece;
+    piece.isAbsolutePinned = true;
+}
+
+function removeAbsolutePin() {
+    this.absolutePinnedPiece.isAbsolutePinned = false;
+    this.absolutePinnedPiece = null;
+}
+
 function BasePiece(board, team) {
+    team.alivePieces.push(this);
+
     this._board = board;
+    this.absolutePinnedPiece = null;
+    this.isAbsolutePinned = false;
     this.team = team;
     this.element = null;
     this.position2d = null;
@@ -115,6 +129,8 @@ function BasePiece(board, team) {
     this.getCorrespondingMove = getCorrespondingMove;
     this.currentSquare = null;
     this.highlightPossibleMoves = highlightPossibleMoves;
+    this.absolutePinPiece = absolutePinPiece;
+    this.removeAbsolutePin = removeAbsolutePin;
     this._removeFromCurrentSquare = removeFromCurrentSquare;
     this._currentListener = null;
     this._move = move;

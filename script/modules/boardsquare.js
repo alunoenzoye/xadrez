@@ -4,6 +4,7 @@ const SQUARE_CLASS_NAME = "board-square";
 const SELECTED_HIGHLIGHT_CLASS_NAME = "board-square-selected-highlight";
 const MOVE_HIGHLIGHT_CLASS_NAME = "board-square-move-highlight";
 const TAKE_HIGHLIGHT_CLASS_NAME = "board-square-take-highlight";
+const PLAYED_HIGHLIGHT_CLASS_NAME = "board-square-played-highlight";
 
 const boardSquareTemplate = document.getElementById("board-square-template");
 
@@ -11,6 +12,7 @@ const highlightEnum = {
     selected: SELECTED_HIGHLIGHT_CLASS_NAME,
     move: MOVE_HIGHLIGHT_CLASS_NAME,
     take: TAKE_HIGHLIGHT_CLASS_NAME,
+    played: PLAYED_HIGHLIGHT_CLASS_NAME,
 }
 
 function clearSquareHighlight() {

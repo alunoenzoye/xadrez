@@ -2,6 +2,25 @@ function getAttackingMoves() {
     return this._attackingMoves;
 }
 
+function updateAttackingMoves() {
+    let attackingMoves = []
+
+    for (const piece of this.alivePieces) {
+        const moves = piece.getPossibleMoves();
+
+        for (const move of moves) {
+            if (!move.canTake) {
+                continue;
+            }
+
+            attackingMoves.push(move);
+        }
+    }
+
+    this.clearAttackingMoves();
+    this._attackingMoves = attackingMoves;
+}
+
 function clearAttackingMoves() {
     this._attackingMoves = [];
 }
@@ -16,13 +35,21 @@ function onPieceTaken(piece) {
     this.takenPieces.push(piece);
 }
 
-function Team(name) {
+function clearTakenPieces() {
+    this.takenPieces = [];
+}
+
+function Team(name, opponent) {
     this.name = name;
+    this.opponent = opponent;
+    this.king = null;
     this._attackingMoves = [];
     this.alivePieces = [];
     this.takenPieces = [];
     this.getAttackingMoves = getAttackingMoves;
+    this.updateAttackingMoves = updateAttackingMoves;
     this.clearAttackingMoves = clearAttackingMoves;
+    this.clearTakenPieces = clearTakenPieces;
     this.addAttackingMove = addAttackingMove;
     this.onPieceTaken = onPieceTaken;
 }

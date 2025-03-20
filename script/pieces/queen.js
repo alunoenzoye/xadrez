@@ -17,7 +17,7 @@ const SEARCH_DIRECTIONS = [
 function onSelect() {
     this.followCursor();
 
-    const possibleMoves = this._getPossibleMoves();
+    const possibleMoves = this.getPossibleMoves();
 
     this.highlightPossibleMoves(possibleMoves);
 }
@@ -27,27 +27,29 @@ function onUnselect() {
 }
 
 function onSquareSelected(square) {
-    const possibleMoves = this._getPossibleMoves();
+    const possibleMoves = this.getPossibleMoves();
     const squarePosition2D = square.position2d;
     const piece = square.piece;
     const correspondingMove = this.getCorrespondingMove(square.position2d, possibleMoves);
 
     if (correspondingMove === null) {
-        return;
+        return false;
     }
 
     if (!correspondingMove.canTake && piece !== null) {
-        return;
+        return false;
     } else if (correspondingMove.canTake && piece !== null) {
         if (!this.canTakePiece(piece)) {
             return;
         }
 
-        piece.take();
+    piece.take();
     }
 
+    this.removeAbsolutePin();
     this.moveToPosition(squarePosition2D);
-    this._firstMove = false;
+
+    return true;
 }
 
 function createImageFromTeam(team) {
@@ -73,26 +75,34 @@ function getPossibleMoves() {
 
     for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
         const searchDirection = SEARCH_DIRECTIONS[i];
+        let blockingPiece = null;
         let currentSquare = board.getSquare(currentPosition2D.add(searchDirection));
         while (currentSquare !== null) {
+            if (currentSquare.piece !== null) {
+                blockingPiece = currentSquare.piece;
+                break;
+            }
+
+            const piece = currentSquare.piece;
+
+            if (piece.constructor.name !== "King") {
+                this.absolutePinPiece(piece);
+            }
+
+            if (blockingPiece !== null) {
+                continue;
+            }
+
             moves.push(new Move(
                 currentSquare.position2d,
                 true
             ));
 
-            if (currentSquare.piece !== null) {
-                break;
-            }
-
             currentSquare = board.getSquare(currentSquare.position2d.add(searchDirection));
         }
     }
 
-    return moves;
-}
-
-function onGameUpdate() {
-
+  return moves;
 }
 
 function Queen(board, team) {
@@ -100,11 +110,12 @@ function Queen(board, team) {
 
     BasePiece.call(this, board, team);
 
+    this.absolutePinnedPiece = null;
     this.onSelect = onSelect;
     this.onUnselect = onUnselect;
     this.onSquareSelected = onSquareSelected;
     this.element = createImageFromTeam(teamName);
-    this._getPossibleMoves = getPossibleMoves;
+    this.getPossibleMoves = getPossibleMoves;
 }
 
 export default Queen;

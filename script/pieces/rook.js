@@ -3,15 +3,11 @@ import Position2D from "../modules/position2d.js";
 import Move from "../modules/move.js";
 import {highlightEnum} from "../modules/boardsquare.js";
 
-const MOVE_OFFSETS = [
-    new Position2D(1, -2),
-    new Position2D(-1, -2),
-    new Position2D(1, 2),
-    new Position2D(-1, 2),
-    new Position2D(2, 1),
-    new Position2D(2, -1),
-    new Position2D(-2, 1),
-    new Position2D(-2, -1),
+const SEARCH_DIRECTIONS = [
+    new Position2D(1, 0),
+    new Position2D(-1, 0),
+    new Position2D(0, 1),
+    new Position2D(0, -1),
 ]
 
 function onSelect() {
@@ -46,7 +42,9 @@ function onSquareSelected(square) {
         piece.take();
     }
 
+    this.removeAbsolutePin();
     this.moveToPosition(squarePosition2D);
+
     this._firstMove = false;
 
     return true;
@@ -57,7 +55,7 @@ function createImageFromTeam(team) {
     img.classList.add("piece");
 
     const prefix = (team === "white") ? "w" : "b";
-    img.src = `/assets/pieces/01_classic/${prefix}-knight.png`;
+    img.src = `/assets/pieces/01_classic/${prefix}-rook.png`;
 
     return img;
 }
@@ -73,29 +71,32 @@ function getPossibleMoves() {
 
     let moves = [];
 
-    for (let i = 0; i < MOVE_OFFSETS.length; i++) {
-        const moveOffset = MOVE_OFFSETS[i];
-        const movePosition = currentPosition2D.add(moveOffset);
-        const currentSquare = board.getSquare(movePosition);
+    for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
+        const searchDirection = SEARCH_DIRECTIONS[i];
+        let currentSquare = board.getSquare(currentPosition2D.add(searchDirection));
+        while (currentSquare !== null) {
+            moves.push(new Move(
+                currentSquare.position2d,
+                true
+            ));
 
-        if (currentSquare === null) {
-            continue;
+            if (currentSquare.piece !== null) {
+                break;
+            }
+
+            currentSquare = board.getSquare(currentSquare.position2d.add(searchDirection));
         }
-
-        moves.push(new Move(
-            movePosition,
-            true
-        ));
     }
 
     return moves;
 }
 
-function Knight(board, team) {
+function Rook(board, team) {
     const teamName = team.name;
 
     BasePiece.call(this, board, team);
 
+    this.firstMove = true;
     this.onSelect = onSelect;
     this.onUnselect = onUnselect;
     this.onSquareSelected = onSquareSelected;
@@ -103,4 +104,4 @@ function Knight(board, team) {
     this.getPossibleMoves = getPossibleMoves;
 }
 
-export default Knight;
+export default Rook;

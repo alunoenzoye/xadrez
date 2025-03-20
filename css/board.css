@@ -79,9 +79,9 @@
     background-color: #50443d;
 }
 
-.board-square[data-square-color="white"].board-square-selected-highlight,
-.board-square[data-square-color="black"].board-square-selected-highlight {
-
+.board-square-played-highlight {
+    outline: 2px solid #00ce00;
+    outline-offset: -2px;
 }
 
 .board-square-move-highlight:before {
@@ -104,4 +104,30 @@
     transform: translate(50%, 50%);
 
     background-color: rgba(255, 128, 0, 0.9);
+}
+
+#pawn-promote-dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 8px;
+    background-color: #8c766d;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+    display: none;
+}
+
+.pawn-promote-dialog-active {
+    display: flex !important;
+}
+
+.pawn-promote-piece {
+    width: var(--square-size);
+    height: var(--square-size);
+    background-color: #dab9a7;
+}
+
+.pawn-promote-piece:hover {
+    cursor: pointer;
 }
