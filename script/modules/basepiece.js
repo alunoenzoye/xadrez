@@ -23,8 +23,9 @@ function moveToPosition(position2d) {
 function take() {
     this._removeFromCurrentSquare()
     this.team.onPieceTaken(this);
-    this.element?.remove();
+    this.element.remove();
     this.position2d = null;
+    this._board.movesTilDraw = 0;
 }
 
 function canTakePiece(piece) {
@@ -102,22 +103,42 @@ function removeFromCurrentSquare() {
     this.currentSquare = null;
 }
 
-function absolutePinPiece(piece) {
-    this.absolutePinnedPiece = piece;
-    piece.isAbsolutePinned = true;
+function addAbsolutePinDirection(position2d) {
+    const formattedDirection = position2d.unit().abs();
+
+    this._absolutePinDirections.push(formattedDirection);
 }
 
-function removeAbsolutePin() {
-    this.absolutePinnedPiece.isAbsolutePinned = false;
-    this.absolutePinnedPiece = null;
+function isPositionAbsolutePinValid(position2d) {
+    const positionUnit = (position2d.sub(this.position2d)).unit().abs();
+
+    let isValid = true
+    
+    for (const direction of this._absolutePinDirections) {
+        if (!positionUnit.equal(direction)) {
+            console.log("whyyyy");
+            isValid = false;
+
+            break;
+        }
+    }
+
+    return isValid;
+}
+
+function clearAbsolutePins() {
+    this._absolutePinDirections = [];
+}
+
+function cleanup() {
+    this._removeFromCurrentSquare();
+    this.unfollowCursor();
 }
 
 function BasePiece(board, team) {
     team.alivePieces.push(this);
 
     this._board = board;
-    this.absolutePinnedPiece = null;
-    this.isAbsolutePinned = false;
     this.team = team;
     this.element = null;
     this.position2d = null;
@@ -129,10 +150,13 @@ function BasePiece(board, team) {
     this.getCorrespondingMove = getCorrespondingMove;
     this.currentSquare = null;
     this.highlightPossibleMoves = highlightPossibleMoves;
-    this.absolutePinPiece = absolutePinPiece;
-    this.removeAbsolutePin = removeAbsolutePin;
+    this.addAbsolutePinDirection = addAbsolutePinDirection;
+    this.isPositionAbsolutePinValid = isPositionAbsolutePinValid;
+    this.clearAbsolutePins = clearAbsolutePins;
+    this._absolutePinDirections = [];
     this._removeFromCurrentSquare = removeFromCurrentSquare;
     this._currentListener = null;
+    this.cleanup = cleanup;
     this._move = move;
 }
 

@@ -42,7 +42,6 @@ function onSquareSelected(square) {
         piece.take();
     }
 
-    this.removeAbsolutePin();
     this.moveToPosition(squarePosition2D);
 
     this._firstMove = false;
@@ -74,11 +73,20 @@ function getPossibleMoves() {
     for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
         const searchDirection = SEARCH_DIRECTIONS[i];
         let blockingPiece = null;
-        let currentSquare = board.getSquare(currentPosition2D.add(searchDirection));
+        const searchInPosition = currentPosition2D.add(searchDirection)
+        let currentSquare = board.getSquare(searchInPosition);
+
+        if (!this.isPositionAbsolutePinValid(searchInPosition)) {
+            continue;
+        }
+
         while (currentSquare !== null) {
+
             moves.push(new Move(
                 currentSquare.position2d,
-                true
+                true,
+                null,
+                this,
             ));
 
             if (currentSquare.piece !== null) {

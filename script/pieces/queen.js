@@ -46,7 +46,6 @@ function onSquareSelected(square) {
     piece.take();
     }
 
-    this.removeAbsolutePin();
     this.moveToPosition(squarePosition2D);
 
     return true;
@@ -75,28 +74,27 @@ function getPossibleMoves() {
 
     for (let i = 0; i < SEARCH_DIRECTIONS.length; i++) {
         const searchDirection = SEARCH_DIRECTIONS[i];
-        let blockingPiece = null;
-        let currentSquare = board.getSquare(currentPosition2D.add(searchDirection));
+        const searchInPosition = currentPosition2D.add(searchDirection)
+        let currentSquare = board.getSquare(searchInPosition);
+
+        if (!this.isPositionAbsolutePinValid(searchInPosition)) {
+            continue;
+        }
+
         while (currentSquare !== null) {
+            moves.push(new Move(
+                currentSquare.position2d,
+                true,
+                null,
+                this
+            ));
+
             if (currentSquare.piece !== null) {
-                blockingPiece = currentSquare.piece;
                 break;
             }
 
             const piece = currentSquare.piece;
 
-            if (piece.constructor.name !== "King") {
-                this.absolutePinPiece(piece);
-            }
-
-            if (blockingPiece !== null) {
-                continue;
-            }
-
-            moves.push(new Move(
-                currentSquare.position2d,
-                true
-            ));
 
             currentSquare = board.getSquare(currentSquare.position2d.add(searchDirection));
         }
@@ -110,7 +108,6 @@ function Queen(board, team) {
 
     BasePiece.call(this, board, team);
 
-    this.absolutePinnedPiece = null;
     this.onSelect = onSelect;
     this.onUnselect = onUnselect;
     this.onSquareSelected = onSquareSelected;

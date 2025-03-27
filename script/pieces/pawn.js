@@ -5,7 +5,6 @@ import Bishop from "./Bishop.js";
 import BasePiece from "../modules/basepiece.js";
 import Position2D from "../modules/position2d.js";
 import Move from "../modules/move.js";
-import {highlightEnum} from "../modules/boardsquare.js";
 
 const PROMOTION_PIECES = [
     {
@@ -89,8 +88,13 @@ async function onSquareSelected(square) {
         piece.take();
     }
 
+    if (correspondingMove.customFunctionality !== null) {
+        correspondingMove.customFunctionality();
+    }
+
+    this._board.movesTilDraw = 0;
     this.moveToPosition(squarePosition2D);
-    this._firstMove = false;
+    this.moveCount++;
 
     if (this.position2d.y === this._promotionHeight) {
         this.unfollowCursor();
@@ -99,10 +103,7 @@ async function onSquareSelected(square) {
         const selectedPiece = await this._promoteDialog();
         const currentPosition = this.position2d;
 
-        team.alivePieces.splice(team.alivePieces.indexOf(this), 1);
-        this._removeFromCurrentSquare()
-        this.element?.remove();
-        this.position2d = null;
+        this.take();
 
         let Constructor = null;
 
@@ -133,6 +134,8 @@ function createImageFromTeam(team) {
 
 function getPossibleMoves() {
     const board = this._board;
+    const team = this.team;
+    const lastMovedPiece = board.lastMovedPiece;
     const currentPosition2D = this.position2d;
     const direction = this._direction;
 
@@ -141,11 +144,41 @@ function getPossibleMoves() {
     }
 
     let moves = [];
-    let forwardLength = (this._firstMove) ? 2 : 1;
+    let forwardLength = (this.moveCount === 0) ? 2 : 1;
+
+    if (lastMovedPiece !== null && !this._didEnPassant) {
+        const opponentPiecePosition = lastMovedPiece.position2d;
+        const isPieceOpponent = (this.team !== lastMovedPiece.team);
+        const isPawn = (lastMovedPiece.constructor.name === "Pawn");
+        const isOnSecondSquare = (lastMovedPiece.didTwoSquareMove);
+        const isAdjacent = (Math.abs(currentPosition2D.x - opponentPiecePosition.x) === 1 && currentPosition2D.y === opponentPiecePosition.y);
+        const isPawnFirstMove = (lastMovedPiece.moveCount === 1);
+
+        if (isPawn && isOnSecondSquare && isAdjacent && isPawnFirstMove && isPieceOpponent) {
+            const movePosition = new Position2D(opponentPiecePosition.x, this.position2d.y + this._direction.y);
+
+            if (this.isPositionAbsolutePinValid(movePosition)) {
+                moves.push(new Move(
+                    movePosition,
+                    true,
+                    () => {
+                        lastMovedPiece.take();
+                    },
+                    this,
+                ))
+            }
+        }
+    }
 
     for (let i = 1; i <= forwardLength; i++) {
+        // Can't move the piece in this direction if it means hanging the king.
+
         const position2d = currentPosition2D.add(direction.mult(new Position2D(0, i)));
         const square = board.getSquare(position2d);
+
+        if (!this.isPositionAbsolutePinValid(position2d)) {
+            continue;
+        }
 
         if (square === null) {
             continue;
@@ -155,9 +188,19 @@ function getPossibleMoves() {
             break
         }
 
+        let customFunctionality = null
+
+        if (i === 2) {
+            customFunctionality = () => {
+                this.didTwoSquareMove = true;
+            }
+        }
+
         moves.push(new Move(
             currentPosition2D.add(direction.mult(new Position2D(0, i))),
-            false
+            false,
+            customFunctionality,
+            this,
         ))
     }
 
@@ -166,11 +209,13 @@ function getPossibleMoves() {
 
     if (leftSquare !== null) {
         const squarePiece = leftSquare.piece;
-        if (squarePiece !== null) {
-            if (squarePiece.team !== this.team) {
+        if (squarePiece !== null && this.isPositionAbsolutePinValid(leftSquare.position2d)) {
+            if (squarePiece.team !== team) {
                 moves.push(new Move(
                     leftSquare.position2d,
-                    true
+                    true,
+                    null,
+                    this,
                 ))
             }
         }
@@ -178,11 +223,13 @@ function getPossibleMoves() {
 
     if (rightSquare !== null) {
         const squarePiece = rightSquare.piece;
-        if (squarePiece !== null) {
-            if (squarePiece.team !== this.team) {
+        if (squarePiece !== null && this.isPositionAbsolutePinValid(rightSquare.position2d)) {
+            if (squarePiece.team !== team) {
                 moves.push(new Move(
                     rightSquare.position2d,
-                    true
+                    true,
+                    null,
+                    this,
                 ))
             }
         }
@@ -197,7 +244,9 @@ function Pawn(board, team) {
 
     BasePiece.call(this, board, team);
 
-    this._firstMove = true;
+    this.moveCount = 0;
+    this.didTwoSquareMove = false;
+    this._didEnPassant = false;
     this._direction = direction;
     this._promotionHeight = (teamName === "white") ? 7 : 0;
     this.onSelect = onSelect;

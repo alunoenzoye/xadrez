@@ -78,13 +78,19 @@ function getPossibleMoves() {
         const movePosition = currentPosition2D.add(moveOffset);
         const currentSquare = board.getSquare(movePosition);
 
+        if (!this.isPositionAbsolutePinValid(movePosition)) {
+            continue;
+        }
+
         if (currentSquare === null) {
             continue;
         }
 
         moves.push(new Move(
             movePosition,
-            true
+            true,
+            null,
+            this,
         ));
     }
 

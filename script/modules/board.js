@@ -11,6 +11,10 @@ import Team from "../modules/team.js";
 let whiteTeam = new Team("white", null);
 let blackTeam = new Team("black", null);
 
+// TODO: listening and dispatching of CHECKMATE, STALEMATE/DRAW, PIECE MOVED, CAPTURE, TURN CHANGE, CHANGE TURN custom events
+// as to why, it allows for external systems like a move logger to be coupled only to the event interface of the event.
+// not only that, syncing the board to an external timer will allow for timed turns, and also a restart game button.
+
 whiteTeam.opponent = blackTeam;
 blackTeam.opponent = whiteTeam;
 
@@ -56,7 +60,11 @@ function removeSelection() {
 
 function updateBoard() {
     console.time("updateBoard");
+
     this.currentTurn = (this.currentTurn === whiteTeam) ? blackTeam : whiteTeam;
+
+    whiteTeam.king.evaluatePins();
+    blackTeam.king.evaluatePins();
 
     whiteTeam.updateAttackingMoves();
     blackTeam.updateAttackingMoves();
@@ -84,7 +92,15 @@ async function onSquareSelected(square) {
         this._removeSelection()
 
         if (moved) {
+            // We don't use the already stored piece variable as that can represent a destroyed pawn,
+            // caused from promoting.
+            this.lastMovedPiece = square.piece;
+            this.movesTilDraw++;
             this._updateBoard();
+
+            if (this.movesTilDraw === 50) {
+                console.log("draw");
+            }
 
             this.element.querySelectorAll(`.${highlightEnum.played}`).forEach((square) => {
                 square.classList.remove(highlightEnum.played);
@@ -93,7 +109,6 @@ async function onSquareSelected(square) {
             oldSquare.highlightSquare(highlightEnum.played);
             square.highlightSquare(highlightEnum.played);
         }
-
 
         return;
     }
@@ -121,6 +136,8 @@ async function onSquareSelected(square) {
 function createPieceInPosition(Piece, position2d, team) {
     const piece = new Piece(this, team);
     piece.moveToPosition(position2d);
+
+    return piece;
 }
 
 function createSymmetrically(Piece, offset, y, team) {
@@ -139,12 +156,22 @@ function startGame() {
             this.createPieceInPosition(Pawn, new Position2D(x, y), team);
         }
 
-        this._createSymmetrically(Bishop, 2, secondRowY, team);
-        this._createSymmetrically(Knight, 1, secondRowY, team);
+        // this._createSymmetrically(Bishop, 2, secondRowY, team);
+        // this._createSymmetrically(Knight, 1, secondRowY, team);
         this._createSymmetrically(Rook, 0, secondRowY, team);
         this.createPieceInPosition(Queen, new Position2D(3, secondRowY), team);
         this.createPieceInPosition(King, new Position2D(4, secondRowY), team);
     }
+}
+
+function cleanBoard() {
+    whiteTeam.cleanPieces();
+    blackTeam.cleanPieces();
+
+    this.lastMovedPiece = null;
+    this._selectedPiece = null;
+    this.movesTilDraw = 0;
+    this.currentTurn = null;
 }
 
 function Board() {
@@ -165,10 +192,12 @@ function Board() {
         this._onSquareSelected(square);
     });
 
+    this.movesTilDraw = 0;
     this._squares = [];
     this._selectedPiece = null;
     this.currentTurn = null;
     this.element = element;
+    this.lastMovedPiece = null;
     this.getSquare = getSquare;
     this.startGame = startGame;
     this.createPieceInPosition = createPieceInPosition;

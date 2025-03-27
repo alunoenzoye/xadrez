@@ -3,7 +3,7 @@ function getAttackingMoves() {
 }
 
 function updateAttackingMoves() {
-    let attackingMoves = []
+let attackingMoves = []
 
     for (const piece of this.alivePieces) {
         const moves = piece.getPossibleMoves();
@@ -39,6 +39,19 @@ function clearTakenPieces() {
     this.takenPieces = [];
 }
 
+function cleanPieces() {
+    for (const piece of this.alivePieces) {
+        piece.cleanup();
+    }
+
+    for (const piece of this.takenPieces) {
+        piece.cleanup();
+    }
+
+    this.alivePieces = [];
+    this.takenPieces = [];
+}
+
 function Team(name, opponent) {
     this.name = name;
     this.opponent = opponent;
@@ -46,6 +59,7 @@ function Team(name, opponent) {
     this._attackingMoves = [];
     this.alivePieces = [];
     this.takenPieces = [];
+    this.cleanPieces = cleanPieces;
     this.getAttackingMoves = getAttackingMoves;
     this.updateAttackingMoves = updateAttackingMoves;
     this.clearAttackingMoves = clearAttackingMoves;
